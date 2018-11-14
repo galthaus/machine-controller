@@ -154,6 +154,7 @@ systemd:
 {{ end }}
 
     - name: download-binaries.service
+      enabled: true
       contents: |
         [Unit]
         Requires=network-online.target
@@ -176,22 +177,11 @@ systemd:
 {{ containerdSystemdUnit true | indent 8 }}
 
     - name: docker.service
-      dropins:
-      - name: override.conf
-        contents: |
-          [Unit]
-          Requires=download-binaries.service containerd.service
-          After=download-binaries.service containerd.service
       contents: |
 {{ dockerSystemdUnit true | indent 8 }}
 
     - name: docker.socket
-      dropins:
-      - name: override.conf
-        contents: |
-          [Unit]
-          Requires=download-binaries.service containerd.service
-          After=download-binaries.service containerd.service
+      enabled: false
       contents: |
 {{ dockerSystemdSocket | indent 8 }}
 
@@ -222,8 +212,8 @@ systemd:
       contents: |
         [Unit]
         Description=Kubernetes Kubelet
-        Requires=docker.service
-        After=docker.service
+        Requires=docker.service containerd.service
+        After=docker.service containerd.service
         [Service]
         TimeoutStartSec=5min
         Environment=KUBELET_IMAGE=docker://k8s.gcr.io/hyperkube-amd64:{{ .HyperkubeImageTag }}

@@ -30,9 +30,9 @@ func DockerDaemonConfig() string {
 const dockerSystemdUnitTpl = `[Unit]
 Description=Docker Application Container Engine
 Documentation=https://docs.docker.com
-After=network-online.target docker.socket containerd.service
+After=containerd.service docker.socket network-online.target
 Wants=network-online.target
-Requires=docker.socket containerd.service
+Requires=containerd.service docker.socket
 
 [Service]
 Environment="PATH=/opt/bin:/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin/"
@@ -99,7 +99,8 @@ SocketUser=root
 SocketGroup=docker
 
 [Install]
-WantedBy=sockets.target`
+WantedBy=sockets.target
+`
 }
 
 const (
