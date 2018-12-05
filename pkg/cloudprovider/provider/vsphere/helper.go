@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"os"
 	"os/exec"
 	"text/template"
@@ -124,13 +125,33 @@ func createClonedVM(ctx context.Context, vmName string, config *Config, dc *obje
 	}
 
 	diskUUIDEnabled := true
+	var props mo.VirtualMachine
+	if err := templateVM.Properties(ctx, templateVM.Reference(), nil, &props); err != nil {
+		return nil, fmt.Errorf("error getting VM template reference: %v", err)
+	}
+	l := object.VirtualDeviceList(props.Config.Hardware.Device)
+
+	deviceSpecs := []types.BaseVirtualDeviceConfigSpec{}
+	disks := l.SelectByType((*types.VirtualDisk)(nil))
+	if len(disks) != 1 {
+		return nil, fmt.Errorf("error: number of disks on templateVM != 1, but %d", len(disks))
+	}
+	disk := disks[0].(*types.VirtualDisk)
+
+	disk.CapacityInBytes = int64(*config.DiskSize * int64(math.Pow(1024, 3)))
+	diskspec := &types.VirtualDeviceConfigSpec{}
+	diskspec.Operation = types.VirtualDeviceConfigSpecOperationEdit
+	diskspec.Device = disk
+	deviceSpecs = append(deviceSpecs, diskspec)
+
 	desiredConfig := types.VirtualMachineConfigSpec{
 		Flags: &types.VirtualMachineFlagInfo{
 			DiskUuidEnabled: &diskUUIDEnabled,
 		},
-		NumCPUs:    config.CPUs,
-		MemoryMB:   config.MemoryMB,
-		VAppConfig: vAppAconfig,
+		NumCPUs:      config.CPUs,
+		MemoryMB:     config.MemoryMB,
+		VAppConfig:   vAppAconfig,
+		DeviceChange: deviceSpecs,
 	}
 
 	// Create a cloned VM from the template VM's snapshot
