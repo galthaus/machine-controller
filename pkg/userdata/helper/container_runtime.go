@@ -83,7 +83,7 @@ func DockerSystemdUnit(setTasksMax bool) (string, error) {
 		return "", fmt.Errorf("failed to execute docker-systemd-unit template: %v", err)
 	}
 
-	return string(b.String()), nil
+	return b.String(), nil
 }
 
 // DockerSystemdSocket returns the systemd socket for docker
@@ -147,5 +147,5 @@ func ContainerdSystemdUnit(setTasksMax bool) (string, error) {
 		return "", fmt.Errorf("failed to execute containerd-systemd-unit template: %v", err)
 	}
 
-	return string(b.String()), nil
+	return b.String(), nil
 }
