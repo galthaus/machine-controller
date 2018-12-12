@@ -23,7 +23,7 @@ const (
 --rotate-certificates=true \
 --cert-dir=/etc/kubernetes/pki \
 --authentication-token-webhook=true \
-{{- if .CloudProvider }}
+{{- if ne .CloudProvider "drp" }}
 --cloud-provider={{ .CloudProvider }} \
 --cloud-config=/etc/kubernetes/cloud-config \
 {{- end }}

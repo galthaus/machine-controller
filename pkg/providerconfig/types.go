@@ -55,7 +55,10 @@ type NetworkConfig struct {
 }
 
 type Config struct {
-	SSHPublicKeys []string `json:"sshPublicKeys"`
+	SSHPublicKeys      []string `json:"sshPublicKeys"`
+	DockerVersion      *string  `json:"dockerVersion,omitempty"`
+	DockerDirect       *bool    `json:"dockerDirect,omitempty"`
+	DockerCgroupDriver *string  `json:"dockerCgroupDriver,omitempty"`
 
 	CloudProvider     CloudProvider        `json:"cloudProvider"`
 	CloudProviderSpec runtime.RawExtension `json:"cloudProviderSpec"`

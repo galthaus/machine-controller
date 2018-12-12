@@ -65,7 +65,18 @@ func (p Provider) UserData(
 	if err != nil {
 		return "", fmt.Errorf("failed to get provider config: %v", err)
 	}
-
+	dockerVersion := "1.13.1"
+	if pconfig.DockerVersion != nil {
+		dockerVersion = *pconfig.DockerVersion
+	}
+	dockerDirect := false
+	if pconfig.DockerDirect != nil {
+		dockerDirect = *pconfig.DockerDirect
+	}
+	dockerCgroupDriver := "systemd"
+	if pconfig.DockerCgroupDriver != nil {
+		dockerCgroupDriver = *pconfig.DockerCgroupDriver
+	}
 	if pconfig.OverwriteCloudConfig != nil {
 		cpConfig = *pconfig.OverwriteCloudConfig
 	}
@@ -95,27 +106,33 @@ func (p Provider) UserData(
 	}
 
 	data := struct {
-		MachineSpec      clusterv1alpha1.MachineSpec
-		ProviderConfig   *providerconfig.Config
-		OSConfig         *Config
-		CloudProvider    string
-		CloudConfig      string
-		KubeletVersion   string
-		ClusterDNSIPs    []net.IP
-		ServerAddr       string
-		Kubeconfig       string
-		KubernetesCACert string
+		MachineSpec        clusterv1alpha1.MachineSpec
+		ProviderConfig     *providerconfig.Config
+		OSConfig           *Config
+		CloudProvider      string
+		CloudConfig        string
+		KubeletVersion     string
+		ClusterDNSIPs      []net.IP
+		ServerAddr         string
+		Kubeconfig         string
+		KubernetesCACert   string
+		DockerVersion      string
+		DockerDirect       bool
+		DockerCgroupDriver string
 	}{
-		MachineSpec:      spec,
-		ProviderConfig:   pconfig,
-		OSConfig:         osConfig,
-		CloudProvider:    cpName,
-		CloudConfig:      cpConfig,
-		KubeletVersion:   kubeletVersion.String(),
-		ClusterDNSIPs:    clusterDNSIPs,
-		ServerAddr:       serverAddr,
-		Kubeconfig:       kubeconfigString,
-		KubernetesCACert: kubernetesCACert,
+		MachineSpec:        spec,
+		ProviderConfig:     pconfig,
+		OSConfig:           osConfig,
+		CloudProvider:      cpName,
+		CloudConfig:        cpConfig,
+		KubeletVersion:     kubeletVersion.String(),
+		ClusterDNSIPs:      clusterDNSIPs,
+		ServerAddr:         serverAddr,
+		Kubeconfig:         kubeconfigString,
+		KubernetesCACert:   kubernetesCACert,
+		DockerVersion:      dockerVersion,
+		DockerDirect:       dockerDirect,
+		DockerCgroupDriver: dockerCgroupDriver,
 	}
 	b := &bytes.Buffer{}
 	err = tmpl.Execute(b, data)
@@ -184,13 +201,21 @@ write_files:
     systemctl restart systemd-modules-load.service
     sysctl --system
 
-    {{ if ne .CloudProvider "aws" }} 
+    {{ if ne .CloudProvider "aws" }}
     # The normal way of setting it via cloud-init is broken:
     # https://bugs.launchpad.net/cloud-init/+bug/1662542
     hostnamectl set-hostname {{ .MachineSpec.Name }}
     {{ end }}
 
-    yum install -y docker-1.13.1 \
+    if ! which docker 2>/dev/null >/dev/null ; then
+    {{ if .DockerDirect }}
+      curl -fsSL https://get.docker.com/ | VERSION={{.DockerVersion}} sh
+    {{ else }}
+      yum install -y docker-{{.DockerVersion}}
+    {{ end }}
+    fi
+
+    yum install -y \
       ebtables \
       ethtool \
       nfs-utils \
@@ -228,7 +253,7 @@ write_files:
 - path: "/etc/systemd/system/kubelet.service.d/extras.conf"
   content: |
     [Service]
-    Environment="KUBELET_EXTRA_ARGS=--cgroup-driver=systemd"
+    Environment="KUBELET_EXTRA_ARGS=--cgroup-driver={{.DockerCgroupDriver}}"
 
 - path: "/etc/kubernetes/cloud-config"
   content: |

@@ -10,7 +10,6 @@ import (
 	cloudprovidererrors "github.com/kubermatic/machine-controller/pkg/cloudprovider/errors"
 	"github.com/kubermatic/machine-controller/pkg/cloudprovider/instance"
 	"github.com/kubermatic/machine-controller/pkg/providerconfig"
-	"github.com/kubermatic/machine-controller/pkg/userdata/convert"
 
 	"k8s.io/apimachinery/pkg/types"
 
@@ -47,9 +46,9 @@ var (
 )
 
 type RawConfig struct {
-	Endpoint     providerconfig.ConfigVarString `json:"endpoint"`
-	Token        providerconfig.ConfigVarString `json:"token"`
-	Pool        providerconfig.ConfigVarString `json:"pool"`
+	Endpoint providerconfig.ConfigVarString `json:"endpoint"`
+	Token    providerconfig.ConfigVarString `json:"token"`
+	Pool     providerconfig.ConfigVarString `json:"pool"`
 
 	CentosWorkflow providerconfig.ConfigVarString `json:"centosWorkflow"`
 	CoreosWorkflow providerconfig.ConfigVarString `json:"coreosWorkflow"`
@@ -57,9 +56,9 @@ type RawConfig struct {
 }
 
 type Config struct {
-	Endpoint     string
-	Token string
-	Pool string
+	Endpoint string
+	Token    string
+	Pool     string
 
 	CentosWorkflow string
 	CoreosWorkflow string
@@ -111,46 +110,55 @@ func (p *provider) Validate(spec v1alpha1.MachineSpec) error {
 		return fmt.Errorf("failed to parse config: %v", err)
 	}
 
- 	fmt.Printf("GREG: Validate: config = %v\n", config)
- 	fmt.Printf("GREG: Validate: pc = %v\n", pc)
+	fmt.Printf("GREG: Validate: config = %v\n", config)
+	fmt.Printf("GREG: Validate: pc = %v\n", pc)
 
 	// GREG: Should we check workflows here?
 
 	return nil
 }
 
-
 func (p *provider) Create(machine *v1alpha1.Machine, data *cloud.MachineCreateDeleteData, userdata string) (instance.Instance, error) {
-        fmt.Printf("GREG: Create: machine: %v\ndata: %v\nuserdata: %v\n", machine, data, userdata)
+	fmt.Printf("GREG: Create: machine: %v\ndata: %v\nuserdata: %v\n", machine, data, userdata)
 
-	config, pc, err := p.getConfig(machine.Spec.ProviderConfig)
+	config, _, err := p.getConfig(machine.Spec.ProviderConfig)
 	if err != nil {
 		return nil, cloudprovidererrors.TerminalError{
 			Reason:  common.InvalidConfigurationMachineError,
 			Message: fmt.Sprintf("Failed to parse MachineSpec, due to %v", err),
 		}
 	}
- 	fmt.Printf("GREG: Create: config = %v\n", config)
+	fmt.Printf("GREG: Create: config = %v\n", config)
 
-	if pc.OperatingSystem != providerconfig.OperatingSystemCoreos {
-		// Gzip the userdata in case we don't use CoreOS.
-		userdata, err = convert.GzipString(userdata)
-		if err != nil {
-			return nil, fmt.Errorf("failed to gzip the userdata")
+	m := &models.Machine{
+		Name: machine.Spec.Name,
+		Params: map[string]interface{}{
+			"machine-controller/uid": string(machine.UID),
+			"cloud-init/user-data":   string(userdata),
+			"machine-plugin":         "packet-ipmi",
+		},
+	}
+	session, err := api.TokenSession(config.Endpoint, config.Token)
+	if err != nil {
+		return nil, cloudprovidererrors.TerminalError{
+			Reason:  common.InvalidConfigurationMachineError,
+			Message: fmt.Sprintf("Failed to connect to the endpoint: %v", err),
 		}
 	}
 
-	// GREG: Note the Name is machine.Spec.Name and UID is machine.UID
-	// Store in the machines parameters.
+	// GREG: This should be a pool call one day.
+	if err := session.CreateModel(m); err != nil {
+		return nil, cloudprovidererrors.TerminalError{
+			Reason:  common.InvalidConfigurationMachineError,
+			Message: fmt.Sprintf("Failed to create : %v", err),
+		}
+	}
 
-	// GREG: pull instance from pool - do we wait?
-	drpInstance := &drpInstance{instance: nil}
-
-	return drpInstance, nil
+	return &drpInstance{instance: m}, nil
 }
 
 func (p *provider) Cleanup(machine *v1alpha1.Machine, kk *cloud.MachineCreateDeleteData) (bool, error) {
-        fmt.Printf("GREG: Cleanup: machine: %v\nkk: %v\n", machine, kk)
+	fmt.Printf("GREG: Cleanup: machine: %v\nkk: %v\n", machine, kk)
 
 	instance, err := p.Get(machine)
 	if err != nil {
@@ -167,16 +175,31 @@ func (p *provider) Cleanup(machine *v1alpha1.Machine, kk *cloud.MachineCreateDel
 			Message: fmt.Sprintf("Failed to parse MachineSpec, due to %v", err),
 		}
 	}
- 	fmt.Printf("GREG: Cleanup: config = %v\n", config)
- 	fmt.Printf("GREG: Cleanup: instance = %v\n", instance)
+	fmt.Printf("GREG: Cleanup: config = %v\n", config)
+	fmt.Printf("GREG: Cleanup: instance = %v\n", instance)
+
+	session, err := api.TokenSession(config.Endpoint, config.Token)
+	if err != nil {
+		return false, cloudprovidererrors.TerminalError{
+			Reason:  common.InvalidConfigurationMachineError,
+			Message: fmt.Sprintf("Failed to connect to the endpoint: %v", err),
+		}
+	}
 
 	// GREG: Release machine to pool
+	name := fmt.Sprintf("Name:%s", instance.Name())
+	if _, err := session.DeleteModel("machines", name); err != nil {
+		return false, cloudprovidererrors.TerminalError{
+			Reason:  common.InvalidConfigurationMachineError,
+			Message: fmt.Sprintf("Failed to delete %s %v", name, err),
+		}
+	}
 
-	return false, nil
+	return true, nil
 }
 
 func (p *provider) Get(machine *v1alpha1.Machine) (instance.Instance, error) {
-        fmt.Printf("GREG: Get: machine: %v\n", machine)
+	fmt.Printf("GREG: Get: machine: %v\n", machine)
 
 	config, _, err := p.getConfig(machine.Spec.ProviderConfig)
 	if err != nil {
@@ -185,7 +208,7 @@ func (p *provider) Get(machine *v1alpha1.Machine) (instance.Instance, error) {
 			Message: fmt.Sprintf("Failed to parse MachineSpec, due to %v", err),
 		}
 	}
- 	fmt.Printf("GREG: Get: config = %v\n", config)
+	fmt.Printf("GREG: Get: config = %v\n", config)
 
 	session, err := api.TokenSession(config.Endpoint, config.Token)
 	if err != nil {
@@ -205,7 +228,7 @@ func (p *provider) Get(machine *v1alpha1.Machine) (instance.Instance, error) {
 	}
 
 	for _, om := range l {
- 		m, _ := om.(*models.Machine)
+		m, _ := om.(*models.Machine)
 		return &drpInstance{instance: m}, nil
 	}
 
@@ -214,19 +237,19 @@ func (p *provider) Get(machine *v1alpha1.Machine) (instance.Instance, error) {
 
 func (p *provider) GetCloudConfig(spec v1alpha1.MachineSpec) (config string, name string, err error) {
 	// GREG: Specific here;
- 	fmt.Printf("GREG: GetCloudConfig: %v\n", spec)
+	fmt.Printf("GREG: GetCloudConfig: %v\n", spec)
 	return "", "drp", nil
 
 }
 
 func (p *provider) MachineMetricsLabels(machine *v1alpha1.Machine) (map[string]string, error) {
- 	fmt.Printf("GREG: MachineMetricsLabels: %v\n", machine)
+	fmt.Printf("GREG: MachineMetricsLabels: %v\n", machine)
 	labels := make(map[string]string)
 	return labels, nil
 }
 
 func (p *provider) MigrateUID(machine *v1alpha1.Machine, new types.UID) error {
- 	fmt.Printf("GREG: MigrateUID: %v\nUUID:%v\n", machine, new)
+	fmt.Printf("GREG: MigrateUID: %v\nUUID:%v\n", machine, new)
 
 	instance, err := p.Get(machine)
 	if err != nil {
@@ -243,8 +266,8 @@ func (p *provider) MigrateUID(machine *v1alpha1.Machine, new types.UID) error {
 			Message: fmt.Sprintf("Failed to parse MachineSpec, due to %v", err),
 		}
 	}
- 	fmt.Printf("GREG: MigrateUID: config = %v\n", config)
- 	fmt.Printf("GREG: MigrateUID: instance = %v\n", instance)
+	fmt.Printf("GREG: MigrateUID: config = %v\n", config)
+	fmt.Printf("GREG: MigrateUID: instance = %v\n", instance)
 
 	// GREG: Update the machine's stored MC UID
 
@@ -260,7 +283,7 @@ func (d *drpInstance) Name() string {
 }
 
 func (d *drpInstance) ID() string {
-        uid, _ := d.instance.Params["machine-controller/uid"].(string)
+	uid, _ := d.instance.Params["machine-controller/uid"].(string)
 	return uid
 }
 
@@ -271,8 +294,9 @@ func (d *drpInstance) Addresses() []string {
 }
 
 func (d *drpInstance) Status() instance.Status {
+	fmt.Printf("GREG: calling status on %s: %s\n", d.instance.Name, d.instance.Stage)
 	return instance.StatusRunning
-        /* GREG: This needs thought
+	/* GREG: This needs thought
 	switch *d.instance.State.Name {
 	case ec2.InstanceStateNameRunning:
 		return instance.StatusRunning
@@ -287,4 +311,3 @@ func (d *drpInstance) Status() instance.Status {
 	}
 	*/
 }
-
