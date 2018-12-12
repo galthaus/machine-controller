@@ -8,6 +8,7 @@ import (
 	"github.com/kubermatic/machine-controller/pkg/cloudprovider/provider/aws"
 	"github.com/kubermatic/machine-controller/pkg/cloudprovider/provider/azure"
 	"github.com/kubermatic/machine-controller/pkg/cloudprovider/provider/digitalocean"
+	"github.com/kubermatic/machine-controller/pkg/cloudprovider/provider/drp"
 	"github.com/kubermatic/machine-controller/pkg/cloudprovider/provider/fake"
 	"github.com/kubermatic/machine-controller/pkg/cloudprovider/provider/hetzner"
 	"github.com/kubermatic/machine-controller/pkg/cloudprovider/provider/kubevirt"
@@ -46,6 +47,9 @@ var (
 		},
 		providerconfig.CloudProviderKubeVirt: func(cvr *providerconfig.ConfigVarResolver) cloud.Provider {
 			return kubevirt.New(cvr)
+		},
+		providerconfig.CloudProviderDRP: func(cvr *providerconfig.ConfigVarResolver) cloud.Provider {
+			return drp.New(cvr)
 		},
 	}
 )

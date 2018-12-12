@@ -1,0 +1,81 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  # If you change the namespace/name, you must also
+  # adjust the rbac rules
+  name: machine-controller-drp
+  namespace: kube-system
+type: Opaque
+stringData:
+  endpoint: https://147.75.73.239:8092
+  token: yXRpZFKAfgp4CvE4eq_malEHC8t_YZ4elsbu1Iiw_8n-9yRu99XZit7pdWoyARWx1NvQgr0v77GElKpQAV4if0K7wqPClRjHPocOVsVcSt6QzQf9XQtsDQ2SS1W7Rs5UWp8NKcRXUC4mxC7p8zjvst7fRJJbin84tBTxdtMhtHSv7A9lUBVnfiT1oF7Lh9CSN8zgcMVa4bZTmgvEQ-tHirPtWKDMmuaCrWkMQBFpW279ozRRmzinF8gyx0bK0W8PSvf6ERmOMULgezcaTqH32iUULQRDpcoVWSPcUHjLp_keps7XesruYceV5HWkG1rcEkntr8xrrkqcUoM_wnPvfuq-8Bd9P3oKi4gOncWK2ZIFwEgLMhKktwnTf1c4bNTBY0vjGCoyk3aDIh7_Dzcv6HGu6FdXzQkEJ0xJ_TVg7BRZ7TIn7j4Rt2sBiJhDtngBPmWxVvZb-oNe7P-i3Iv6o0nkR_49EjWXCfagEmH6290VnwXbq8EBD8enV4UKvPtbMiWUDQciRyBz6v0Xhv5_ioq7qy7TJnizPTyAucc4pB8PMG8yEefXiYy44FkC5ap-z7Ff4qf65o6MXXA6OgIEG7FkSPhqetWH1Wu15Of487CCikK4MOPrCSf0QnxJhYEPTZA-ZRhHdv2_aysy1ag6E-jF0BT-tnovJRLlvyLzk-OYbuE2ja04iT_Tlo6ViGTPsmq7NnM8p7dYMmLSoXl4ByS4wn8aqQADIX-9ojC9eHUOEs87MXiCYZ8nlUkRzjqDX3UySVCusPJ3taIRDtV_Q-_QhVcYhiHzcq_AEI3BG_yMxZhTe1bcjF2nyyk3hDED4wNVIBT030nQwDwzcbM3L4KF5seEgyGWWV3TtmnuXgOiepIYWGCihu4=
+  pool: k8s-cluster-1
+  centosWorkflow: mc-centos7-install
+  coreosWorkflow: mc-cores-install
+  ubuntuWorkflow: mc-ubuntu18.04-install
+  cleanupWorkflow: mc-cleanup
+---
+apiVersion: "cluster.k8s.io/v1alpha1"
+kind: MachineDeployment
+metadata:
+  name: drp-machinedeployment
+  namespace: kube-system
+spec:
+  paused: false
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  minReadySeconds: 0
+  selector:
+    matchLabels:
+      foo: bar
+  template:
+    metadata:
+      labels:
+        foo: bar
+    spec:
+      providerConfig:
+        value:
+          cloudProvider: "drp"
+          cloudProviderSpec:
+            token:
+              secretKeyRef:
+                namespace: kube-system
+                name: machine-controller-drp
+                key: token
+            endpoint:
+              secretKeyRef:
+                namespace: kube-system
+                name: machine-controller-drp
+                key: endpoint
+            pool:
+              secretKeyRef:
+                namespace: kube-system
+                name: machine-controller-drp
+                key: pool
+            centosWorkflow:
+              secretKeyRef:
+                namespace: kube-system
+                name: machine-controller-drp
+                key: centosWorkflow
+            ubuntuWorkflow:
+              secretKeyRef:
+                namespace: kube-system
+                name: machine-controller-drp
+                key: ubuntuWorkflow
+            coreosWorkflow:
+              secretKeyRef:
+                namespace: kube-system
+                name: machine-controller-drp
+                key: coreosWorkflow
+            cleanupWorkflow:
+              secretKeyRef:
+                namespace: kube-system
+                name: machine-controller-drp
+                key: cleanupWorkflow
+          operatingSystem: "centos"
+      versions:
+        kubelet: 1.12.3

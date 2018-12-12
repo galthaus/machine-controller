@@ -62,6 +62,17 @@
   revision = "de5bf2ad457846296e2031421a34e2568e304e35"
 
 [[projects]]
+  branch = "master"
+  digest = "1:34cd0ea5148bc3fee5f78a3f0b31240a1ecf1d6c444b234ce247fda597cf517c"
+  name = "github.com/VictorLowther/jsonpatch2"
+  packages = [
+    ".",
+    "utils",
+  ]
+  pruneopts = "NUT"
+  revision = "a3386fdb359634d937f41d6f66af3df4d25c5ae4"
+
+[[projects]]
   branch = "go15"
   digest = "1:8dab0033e231d02909f00a501a1f1ac01e63fd267dcb374a5de71b99ba1ee74f"
   name = "github.com/ajeddeloh/go-json"
@@ -136,6 +147,14 @@
   packages = ["quantile"]
   pruneopts = "NUT"
   revision = "3a771d992973f24aa725d07868b467d1ddfceafb"
+
+[[projects]]
+  digest = "1:a12d94258c5298ead75e142e8001224bf029f302fed9e96cd39c0eaf90f3954d"
+  name = "github.com/boltdb/bolt"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "2f1ce7a837dcb8da3ec595b1dac9d0632f0f99e8"
+  version = "v1.3.1"
 
 [[projects]]
   digest = "1:15173ac9caac43ba3a8990716158f5fd08174293e259d0a9e67f6fc98cc39d35"
@@ -214,11 +233,46 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:4423afcafee00f8d138b1409d262a85e252292e3684a31a6df88dbc4b2f14b46"
+  name = "github.com/digitalrebar/logger"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "043d41e239ca1937c085cb9dc31b5d1a098c1b98"
+
+[[projects]]
+  digest = "1:2752f8508f6249439d2cbc429569fd929716d00b55ea8ddd79618cdd6bb6a921"
+  name = "github.com/digitalrebar/provision"
+  packages = [
+    "api",
+    "models",
+  ]
+  pruneopts = "NUT"
+  revision = "8da90ceaf50f97c0d645c081f0384507e446424e"
+  version = "v3.11.0"
+
+[[projects]]
+  branch = "master"
+  digest = "1:c6db5eb99832bdc481178b9e04ece5389ef6e61db927c1b400506d1f14b53c2b"
+  name = "github.com/digitalrebar/store"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "63349d4ab20ba3b162635d60d6c3b34c7bb59bd9"
+
+[[projects]]
+  branch = "master"
   digest = "1:ec6271918b59b872a2d25e374569a4f75f1839d91e4191470c297b7eaaaf7641"
   name = "github.com/dimchansky/utfbom"
   packages = ["."]
   pruneopts = "NUT"
   revision = "6c6132ff69f0f6c088739067407b5d32c52e1d0f"
+
+[[projects]]
+  digest = "1:6124151ec1dc6f7f99f59c87552ed75f8b5e84253c5b3c3d124d681b31a99037"
+  name = "github.com/elithrar/simple-scrypt"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "d150773194090feb6c897805a7bcea8d49544e2c"
+  version = "v1.3.0"
 
 [[projects]]
   digest = "1:3537d33c077a9666720dc987fddfecb07270606ac0a58f67abd08e3b252c0a45"
@@ -446,6 +500,30 @@
   revision = "c63ab54fda8f77302f8d414e19933f2b6026a089"
 
 [[projects]]
+  digest = "1:a6870429d5083ea442fc6df86fa846dbe19f6f2a27607213594dd86debb10a52"
+  name = "github.com/hashicorp/consul"
+  packages = ["api"]
+  pruneopts = "NUT"
+  revision = "0bddfa23a2ebe3c0773d917fc104f53d74f7a5ec"
+  version = "v1.4.0"
+
+[[projects]]
+  digest = "1:a5d940c38bf56f121721bfa747c66356df387cb9d5318c570c6d4170aab62862"
+  name = "github.com/hashicorp/go-cleanhttp"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "e8ab9daed8d1ddd2d3c4efba338fe2eeae2e4f18"
+  version = "v0.5.0"
+
+[[projects]]
+  branch = "master"
+  digest = "1:cdb5ce76cd7af19e3d2d5ba9b6458a2ee804f0d376711215dd3df5f51100d423"
+  name = "github.com/hashicorp/go-rootcerts"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "6bb64b370b90e7ef1fa532be9e591a81c3493e00"
+
+[[projects]]
   branch = "master"
   digest = "1:13e2fa5735a82a5fb044f290cfd0dba633d1c5e516b27da0509e0dbb3515a18e"
   name = "github.com/hashicorp/golang-lru"
@@ -455,6 +533,14 @@
   ]
   pruneopts = "NUT"
   revision = "0fb14efe8c47ae851c0034ed7a448854d3d34cf3"
+
+[[projects]]
+  digest = "1:0dd7b7b01769f9df356dc99f9e4144bdbabf6c79041ea7c0892379c5737f3c44"
+  name = "github.com/hashicorp/serf"
+  packages = ["coordinate"]
+  pruneopts = "NUT"
+  revision = "d6574a5bb1226678d7010325fb6c985db20ee458"
+  version = "v0.8.1"
 
 [[projects]]
   branch = "master"
@@ -508,6 +594,17 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:9fd7fda663881246d86516871f3099ca699459671f21666efb5b24175db90ec9"
+  name = "github.com/krolaw/dhcp4"
+  packages = [
+    ".",
+    "conn",
+  ]
+  pruneopts = "NUT"
+  revision = "7cead472c414711982509839c1a6a324d4c70ce6"
+
+[[projects]]
+  branch = "master"
   digest = "1:84a5a2b67486d5d67060ac393aa255d05d24ed5ee41daecd5635ec22657b6492"
   name = "github.com/mailru/easyjson"
   packages = [
@@ -533,6 +630,22 @@
   pruneopts = "NUT"
   revision = "3247c84500bff8d9fb6d579d800f20b3e091582c"
   version = "v1.0.0"
+
+[[projects]]
+  digest = "1:a4df73029d2c42fabcb6b41e327d2f87e685284ec03edf76921c267d9cfc9c23"
+  name = "github.com/mitchellh/go-homedir"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "ae18d6b8b3205b561c79e8e5f69bff09736185f4"
+  version = "v1.0.0"
+
+[[projects]]
+  digest = "1:a45ae66dea4c899d79fceb116accfa1892105c251f0dcd9a217ddc276b42ec68"
+  name = "github.com/mitchellh/mapstructure"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "3536a929edddb9a5b34bd6861dc4a9647cb459fe"
+  version = "v1.1.2"
 
 [[projects]]
   digest = "1:2f42fa12d6911c7b7659738758631bec870b7e9b4c6be5444f963cdcfccc191f"
@@ -700,6 +813,30 @@
   version = "v0.17.1"
 
 [[projects]]
+  branch = "master"
+  digest = "1:f15121220068fb01e71ad08b0fdbd1bfaa926be774e7634e8e332c82134079b0"
+  name = "github.com/xeipuuv/gojsonpointer"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "4e3ac2762d5f479393488629ee9370b50873b3a6"
+
+[[projects]]
+  branch = "master"
+  digest = "1:131db546a264d76defd7a4ce233796316b2ab856991cb4b7d6ced2a3c7294ad3"
+  name = "github.com/xeipuuv/gojsonreference"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "bd5ef7bd5415a7ac448318e64f11a24cd21e594b"
+
+[[projects]]
+  digest = "1:55d89c767205cf255907b632bfb0fa5795bc8b1682d1acd31e138af6c4f6e176"
+  name = "github.com/xeipuuv/gojsonschema"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "da425ebb7609ba06a0f395fc8a254d1c303364a0"
+  version = "v1.0"
+
+[[projects]]
   digest = "1:22f696cee54865fb8e9ff91df7b633f6b8f22037a8015253c6b6a71ca82219c7"
   name = "go.uber.org/atomic"
   packages = ["."]
@@ -740,17 +877,20 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:524892e049667e5e7df536e77927ea8c4b40d858440c10b161459cc0295a3bd2"
+  digest = "1:4d66a016d8641868053bb0b718a13320170476462c5283c70e2a5d63935bc3a2"
   name = "golang.org/x/crypto"
   packages = [
     "curve25519",
     "ed25519",
     "ed25519/internal/edwards25519",
     "internal/chacha20",
+    "nacl/box",
+    "nacl/secretbox",
     "pbkdf2",
     "pkcs12",
     "pkcs12/internal/rc2",
     "poly1305",
+    "salsa20/salsa",
     "scrypt",
     "ssh",
     "ssh/terminal",
@@ -760,15 +900,19 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:060b5b850b60c93dd911fc7157ebf149d889d05cf9fb19817a5cbcd2deb5de9f"
+  digest = "1:91a111ea73fc5c7535b93842d35ebcab088f02e1e8c89e522784daa1c8812d05"
   name = "golang.org/x/net"
   packages = [
+    "bpf",
     "context",
     "context/ctxhttp",
     "http/httpguts",
     "http2",
     "http2/hpack",
     "idna",
+    "internal/iana",
+    "internal/socket",
+    "ipv4",
     "lex/httplex",
   ]
   pruneopts = "NUT"
@@ -1323,6 +1467,8 @@
     "github.com/aws/aws-sdk-go/service/iam",
     "github.com/coreos/container-linux-config-transpiler/config",
     "github.com/digitalocean/godo",
+    "github.com/digitalrebar/provision/api",
+    "github.com/digitalrebar/provision/models",
     "github.com/ghodss/yaml",
     "github.com/go-test/deep",
     "github.com/golang/glog",
